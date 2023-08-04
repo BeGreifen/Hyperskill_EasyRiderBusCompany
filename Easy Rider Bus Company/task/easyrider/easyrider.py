@@ -15,7 +15,11 @@ def check_doc_list(doc: list) -> dict:
                 if not isinstance(value, int):
                     result_dict[key] += 1
             else:
-                if not isinstance(value, str) or value == "":
+                if not isinstance(value, str):
+                    result_dict[key] += 1
+                elif value == "" and key not in "stop_type":
+                    result_dict[key] += 1
+                elif key in "stop_type" and len(value)>1:
                     result_dict[key] += 1
     return result_dict
 
@@ -108,8 +112,8 @@ def dummy_input() -> str:
 
 
 def main():
-    doc_list = json.loads(dummy_input())
-    # doc_list = json.loads(input())
+    #  doc_list = json.loads(dummy_input())
+    doc_list = json.loads(input())
     res = check_doc_list(doc_list)
     sum_errors = sum(res.values())
     print(f"Type and required field validation: {sum_errors} errors")
