@@ -61,6 +61,19 @@ def check_if_nltk_packages_are_installed():
     return True
 
 
+def topic_tokenization():
+    from nltk import sent_tokenize
+
+    text = '''Louis XVI (born 1754 A.D.) also encouraged major voyages of exploration. 
+    In 1785, he appointed La Pérouse to lead a sailing expedition around the world. 
+    (La Pérouse and his fleet disappeared after leaving Botany Bay in March 1788. 
+    Louis is recorded as having asked, on the morning of his execution, "Any news of La Pérouse?".)'''
+
+    print(len(sent_tokenize(text)))
+
+
+
+
 @logger
 def main():
     packages_installed = check_if_nltk_packages_are_installed()
@@ -80,4 +93,5 @@ if __name__ == "__main__":
                         filemode='w'  # Use 'w' mode to overwrite the log file on each run, or 'a' to append
                         )
     logging.info("**** solution started ****")
+    topic_tokenization()
     main()
