@@ -1,6 +1,6 @@
 import re 
 
-pattern="(dog|cat|parrot|hamster)"
+pattern = r"(dog|cat|parrot|hamster)"
 string = input()
 # your code here
-print(re.findall(pattern,input(),flags=re.IGNORECASE))
+print(re.findall(pattern, string, flags=re.IGNORECASE))
