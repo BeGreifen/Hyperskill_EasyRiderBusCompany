@@ -1,3 +1,5 @@
 content:
 - Writing files
 - Match object and flags
+- Regexp functions in Python
+- Regexp flags in Python
