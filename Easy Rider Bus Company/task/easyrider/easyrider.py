@@ -150,7 +150,7 @@ def check_stop_type(stop_type:str) -> bool:
     return stop_type in list_stop_types
 
 
-@logger
+# @logger
 def check_doc_list(list_of_buses: list) -> dict:
     """
         Check a list of dictionaries representing buses and count missing elements or incorrectly formatted values.
@@ -200,6 +200,37 @@ def check_doc_list(list_of_buses: list) -> dict:
     return result_dict
 
 
+@logger
+def get_line_names_and_stops(bus_data: list):
+    """
+    Get line names (bus_id) and the number of stops for each line.
+
+    Parameters:
+        bus_data (list): A list of dictionaries containing bus data.
+                         Each dictionary must have the "bus_id" key.
+
+    Returns:
+        dict: A dictionary containing line names (bus_id) as keys and
+              the number of stops for each line as values.
+
+    Calculates the number of stops for each line (bus_id) based on the provided bus_data.
+    The function iterates through the list of dictionaries and counts the occurrences of each bus_id.
+    The result is returned as a dictionary with bus_id as keys and the count of stops as values.
+    """
+    # Create a dictionary to store the count of stops for each line
+    line_stops_count = {}
+
+    # Calculate the number of stops for each line
+    for item in bus_data:
+        bus_id = item["bus_id"]
+        if bus_id in line_stops_count:
+            line_stops_count[bus_id] += 1
+        else:
+            line_stops_count[bus_id] = 1
+
+    return line_stops_count
+
+
 def main():
     """
         Main function to test the check_doc_list function with JSON-formatted input.
@@ -213,19 +244,30 @@ def main():
          {"bus_id": 128, "stop_id": 3, "stop_name": "", "next_stop": 5, "stop_type": "", "a_time": "08:19"},
          {"bus_id": 128, "stop_id": 5, "stop_name": "Fifth Avenue", "next_stop": 7, "stop_type": "O", "a_time": "08:25"}]
 
-        Output: (only report stop_name, stop_type, a_time)
-        Type and required field validation: 2 errors
-        stop_name: 1
-        stop_type: 1
-        a_time: 0
+        Output:
+        print the line names and the stop number:
+        Example:
+        bus_id: 128, stops: 8
+        bus_id: 256, stops: 9
+        bus_id: 512, stops: 8
+        bus_id: 1024, stops: 2
         """
     bus_list = json.loads(input())
-    res = check_doc_list(bus_list)
-    sum_errors = sum(res.values())
-    print(f"Type and required field validation: {sum_errors} errors")
-    for key, value in res.items():
-        if key in ("stop_name","stop_type","a_time"):
-            print(f"{key}: {value}")
+    # tasks of stage 2:
+    # res = check_doc_list(bus_list)
+    # sum_errors = sum(res.values())
+
+    line_stops_count = get_line_names_and_stops(bus_list)
+    output = ""
+    for bus_id, stops_count in line_stops_count.items():
+        output += f"bus_id: {bus_id}, stops: {stops_count}\n"
+    print(output)
+
+    # tasks of stage 2:
+    # print(f"Type and required field validation: {sum_errors} errors")
+    # for key, value in res.items():
+    #     if key in ("stop_name","stop_type","a_time"):
+    #         print(f"{key}: {value}")
 
 
 if __name__ == "__main__":
