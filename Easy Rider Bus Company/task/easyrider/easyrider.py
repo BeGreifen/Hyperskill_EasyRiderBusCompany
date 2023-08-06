@@ -200,7 +200,6 @@ def check_doc_list(list_of_buses: list) -> dict:
     return result_dict
 
 
-@logger
 def get_line_names_and_stops(bus_data: list):
     """
     Get line names (bus_id) and the number of stops for each line.
@@ -231,43 +230,164 @@ def get_line_names_and_stops(bus_data: list):
     return line_stops_count
 
 
-def main():
+@logger
+def check_start_and_finish_stops(bus_data: list):
     """
-        Main function to test the check_doc_list function with JSON-formatted input.
+    Check if each line has one start "S" and one finishing stop "F" of stop_type.
 
-        The function takes JSON-formatted input representing a list of bus data. It then calls the check_doc_list
-        function to validate and count the errors in the data. The function prints the overall number of errors
-        and the count of errors for each key.
+    Parameters:
+        bus_data (list): A list of dictionaries containing bus data.
+                         Each dictionary must have the "bus_id" and "stop_type" keys.
 
-        Example Input (as JSON):
-        [{"bus_id": 128, "stop_id": 1, "stop_name": "Prospekt Avenue", "next_stop": 3, "stop_type": "S", "a_time": 8.12},
-         {"bus_id": 128, "stop_id": 3, "stop_name": "", "next_stop": 5, "stop_type": "", "a_time": "08:19"},
-         {"bus_id": 128, "stop_id": 5, "stop_name": "Fifth Avenue", "next_stop": 7, "stop_type": "O", "a_time": "08:25"}]
+    Raises:
+        ValueError: If a line doesn't have exactly one start "S" and one finishing stop "F".
 
-        Output:
-        print the line names and the stop number:
-        Example:
-        bus_id: 128, stops: 8
-        bus_id: 256, stops: 9
-        bus_id: 512, stops: 8
-        bus_id: 1024, stops: 2
-        """
+    Example Usage:
+        # Sample bus data
+        bus_data = [
+            {
+                "bus_id": 128,
+                "stop_id": 1,
+                "stop_type": "S",
+                ...
+            },
+            {
+                "bus_id": 128,
+                "stop_id": 2,
+                "stop_type": "",
+                ...
+            },
+            ...
+            # Rest of the bus data
+            ...
+        ]
+
+        # Call the function to check start and finish stops for each line
+        check_start_and_finish_stops(bus_data)
+    """
+    # Create a dictionary to store the count of start and finish stops for each line
+    start_finish_counts = {}
+
+    # Check for each line if it has one start "S" and one finishing stop "F" of stop_type
+    for item in bus_data:
+        bus_id = item["bus_id"]
+        stop_type = item["stop_type"]
+
+        if stop_type == "S":
+            start_finish_counts[bus_id] = start_finish_counts.get(bus_id, 0) + 1
+        elif stop_type == "F":
+            start_finish_counts[bus_id] = start_finish_counts.get(bus_id, 0) - 1
+
+    # Check if each line has exactly one start "S" and one finishing stop "F"
+    for bus_id, count in start_finish_counts.items():
+        if count != 0:
+            raise ValueError(f"There is no start or end stop for the line: {bus_id}.")
+
+
+@logger
+def get_stops_by_type(bus_data):
+    """
+    Group bus stops based on their stop_type.
+
+    Parameters:
+        bus_data (list): A list of dictionaries containing bus stop data.
+                         Each dictionary must have "bus_id", "stop_name", and "stop_type" keys.
+
+    Returns:
+        dict: A dictionary containing stop types as keys and a sorted list of stops as values.
+
+    The function iterates through the list of bus stop data and groups stops into three categories:
+    - Start stops: Stops with "stop_type" == "S".
+    - Transfer stops: Stops shared by at least two bus lines ("stop_type" other than "S" and "F").
+    - Finish stops: Stops with "stop_type" == "F".
+
+    The result is returned as a dictionary with stop types as keys and a sorted list of stops as values.
+    """
+
+    start_stops = []
+    transfer_stops = []
+    finish_stops = []
+
+    # Create sets to keep track of transfer and finish stops names
+    transfer_stops_set = set()
+    finish_stops_set = set()
+    start_stops_set = set()
+
+    # Create a dictionary to store the count of stops for each line
+    transfer_stops_count = {}
+
+    for item in bus_data:
+        bus_id = item["bus_id"]
+        stop_name = item["stop_name"]
+        stop_type = item["stop_type"]
+
+        # Update the line_stops_count
+        if stop_name in transfer_stops_count:
+            transfer_stops_count[stop_name].add(bus_id)
+        else:
+            transfer_stops_count[stop_name] = {bus_id}
+
+        if stop_type == "S":
+            # If the stop name is not in the start stops set, add it to both the start stops list and set
+            if stop_name not in start_stops_set:
+                start_stops.append(stop_name)
+                start_stops_set.add(stop_name)
+        elif stop_type == "F":
+            # If the stop name is not in the finish stops set, add it to both the finish stops list and set
+            if stop_name not in finish_stops_set:
+                finish_stops.append(stop_name)
+                finish_stops_set.add(stop_name)
+        else:
+            pass
+
+    # Filter out the stops with only one bus line from transfer_stops
+    transfer_stops = [stop for stop in transfer_stops_count.keys() if len(transfer_stops_count.get(stop, 0)) > 1]
+
+    # Sort the stops alphabetically
+    start_stops.sort()
+    transfer_stops.sort()
+    finish_stops.sort()
+
+    stops_by_type = {
+        "Start stops": start_stops,
+        "Transfer stops": transfer_stops,
+        "Finish stops": finish_stops
+    }
+
+    return stops_by_type
+
+
+def main():
     bus_list = json.loads(input())
     # tasks of stage 2:
     # res = check_doc_list(bus_list)
     # sum_errors = sum(res.values())
-
-    line_stops_count = get_line_names_and_stops(bus_list)
-    output = ""
-    for bus_id, stops_count in line_stops_count.items():
-        output += f"bus_id: {bus_id}, stops: {stops_count}\n"
-    print(output)
-
-    # tasks of stage 2:
     # print(f"Type and required field validation: {sum_errors} errors")
     # for key, value in res.items():
     #     if key in ("stop_name","stop_type","a_time"):
     #         print(f"{key}: {value}")
+
+    # task of stage 3:
+    # line_stops_count = get_line_names_and_stops(bus_list)
+    # output = ""
+    # for bus_id, stops_count in line_stops_count.items():
+    #     output += f"bus_id: {bus_id}, stops: {stops_count}\n"
+    # print(output)
+
+    # task of stage 4:
+    # Call the function to check start and finish stops for each line
+    try:
+        check_start_and_finish_stops(bus_list)
+        logging.info("All lines have exactly one start 'S' and one finishing stop 'F'.")
+    except ValueError as e:
+        print(e)
+        exit()
+
+    # Call the function to get stops grouped by their stop_type
+    stops_by_type = get_stops_by_type(bus_list)
+    # Print the output in the desired format
+    for stop_type, stops in stops_by_type.items():
+        print(f"{stop_type}: {len(stops)} {stops}")
 
 
 if __name__ == "__main__":
