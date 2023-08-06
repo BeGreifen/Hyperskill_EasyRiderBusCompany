@@ -1,7 +1,8 @@
 # Write your code here
-import json
 import logging
 import inspect
+import json
+import re
 
 
 def logger(func):
@@ -20,6 +21,46 @@ def logger(func):
         return result
 
     return wrap
+
+# @logger
+def check_military_time(str_time: str) -> bool:
+    # Define the regex pattern for military time format
+    pattern = r'^[01]\d:[0-5]\d$'
+
+    # Use re.match() to check if the input string matches the pattern
+    match = re.match(pattern, str_time)
+
+    # Return True if there's a match, otherwise False
+    return match is not None
+
+
+# @logger
+def check_stop_name_in_list(stop_name:str) -> bool:
+    list_stop_names = {"Sesame Street", "Fifth Avenue", "Sunset Boulevard", "Elm Street",
+                       "Bourbon Street", "Prospekt Avenue", "Pilotow Street"}
+    return stop_name in list_stop_names
+
+
+# @logger
+def check_stop_name(stop_name: str) -> bool:
+    # Define the regex patterns for valid suffix and valid prefix
+    valid_suffix_pattern = r' (Road|Avenue|Boulevard|Street)$'
+    valid_prefix_pattern = r'^[A-Z][a-zA-Z\s]+'
+
+    # Check for a valid suffix using re.search()
+    has_valid_suffix = bool(re.search(valid_suffix_pattern, stop_name))
+
+    # Check for a valid prefix using re.match()
+    has_valid_prefix = bool(re.match(valid_prefix_pattern, stop_name))
+
+    # Return True if both valid suffix and valid prefix are present, otherwise False
+    return has_valid_suffix and has_valid_prefix
+
+
+@logger
+def check_stop_type(stop_type:str) -> bool:
+    list_stop_types = {"", "S", "O", "F"}
+    return stop_type in list_stop_types
 
 
 @logger
@@ -60,8 +101,15 @@ def check_doc_list(list_of_buses: list) -> dict:
                     result_dict[key] += 1
                 elif value == "" and key not in "stop_type":
                     result_dict[key] += 1
-                elif key in "stop_type" and len(value)>1:
+                elif key in "stop_type" and len(value) > 1:
                     result_dict[key] += 1
+                elif key in "stop_type" and not check_stop_type(value):
+                    result_dict[key] += 1
+                elif key in "a_time" and not check_military_time(value):
+                    result_dict[key] += 1
+                elif key in "stop_name" and not check_stop_name(value):
+                    result_dict[key] += 1
+
     return result_dict
 
 
@@ -92,7 +140,9 @@ def main():
     sum_errors = sum(res.values())
     print(f"Type and required field validation: {sum_errors} errors")
     for key, value in res.items():
-        print(f"{key}: {value}")
+        if key in ("stop_name","stop_type","a_time"):
+            print(f"{key}: {value}")
+
 
 
 if __name__ == "__main__":
