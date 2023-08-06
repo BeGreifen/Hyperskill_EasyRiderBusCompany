@@ -222,5 +222,8 @@ files:
     2023-08-06 20:05:11,158 - INFO - get_stops_by_type returned: {'Start stops': ['Arlington Road', 'Fifth Avenue', 'Karlikowska Avenue', 'Pilotow Street'], 'Transfer stops': ['Elm Street', 'Prospekt Avenue', 'Sesame Street', 'Sunset Boulevard'], 'Finish stops': ['Michigan Avenue', 'Prospekt Avenue', 'Sesame Street']}
   learner_created: true
 feedback_link: https://hyperskill.org/learn/step/10892#comment
-status: Unchecked
+status: Solved
+feedback:
+  message: Congratulations!
+  time: "Sun, 06 Aug 2023 19:11:55 UTC"
 record: -1
