@@ -3,6 +3,7 @@ import logging
 import inspect
 import json
 import re
+from datetime import datetime
 
 
 def logger(func):
@@ -230,7 +231,7 @@ def get_line_names_and_stops(bus_data: list):
     return line_stops_count
 
 
-@logger
+# @logger
 def check_start_and_finish_stops(bus_data: list):
     """
     Check if each line has one start "S" and one finishing stop "F" of stop_type.
@@ -284,7 +285,7 @@ def check_start_and_finish_stops(bus_data: list):
             raise ValueError(f"There is no start or end stop for the line: {bus_id}.")
 
 
-@logger
+# @logger
 def get_stops_by_type(bus_data):
     """
     Group bus stops based on their stop_type.
@@ -357,6 +358,55 @@ def get_stops_by_type(bus_data):
     return stops_by_type
 
 
+@logger
+def check_arrival_time(bus_data):
+    """
+    Check the arrival time for upcoming stops for each bus line and identify any time anomalies.
+
+    Parameters:
+        bus_data (list): A list of dictionaries containing bus stop data.
+                         Each dictionary must have "bus_id", "stop_name", "next_stop", and "a_time" keys.
+
+    Returns:
+        dict: A dictionary containing bus lines with time anomalies and the names of the incorrect stops.
+
+    The function iterates through the list of bus stop data and checks if the arrival time for each stop is greater
+    than the previous stop's time for the same bus line (bus_id). If not, it marks that bus line as having a time
+    anomaly and remembers the name of the incorrect stop.
+
+    The function uses a boolean variable 'error_free' to keep track of whether the current bus line is error-free.
+    It stops checking a bus line as soon as a time anomaly is detected and continues with the next bus line.
+
+    The result is returned as a dictionary with bus lines (bus_id) as keys and the names of incorrect stops as values.
+    """
+    time_anomalies = {}
+    error_free = True
+
+    for i in range(1, len(bus_data)):
+        prev_stop = bus_data[i - 1]
+        current_stop = bus_data[i]
+
+        if current_stop["bus_id"] == prev_stop["bus_id"]:
+            if error_free:
+                prev_time = datetime.strptime(prev_stop["a_time"], "%H:%M")
+                current_time = datetime.strptime(current_stop["a_time"], "%H:%M")
+                if current_time <= prev_time:
+                    error_free = False
+
+                    bus_id = current_stop["bus_id"]
+                    stop_name = current_stop["stop_name"]
+
+                    if bus_id in time_anomalies:
+                        if stop_name not in time_anomalies[bus_id]:
+                            time_anomalies[bus_id].append(stop_name)
+                    else:
+                        time_anomalies[bus_id] = [stop_name]
+        else:
+            error_free = True
+
+    return time_anomalies
+
+
 def main():
     bus_list = json.loads(input())
     # tasks of stage 2:
@@ -376,18 +426,30 @@ def main():
 
     # task of stage 4:
     # Call the function to check start and finish stops for each line
-    try:
-        check_start_and_finish_stops(bus_list)
-        logging.info("All lines have exactly one start 'S' and one finishing stop 'F'.")
-    except ValueError as e:
-        print(e)
-        exit()
+    # try:
+    #     check_start_and_finish_stops(bus_list)
+    #     logging.info("All lines have exactly one start 'S' and one finishing stop 'F'.")
+    # except ValueError as e:
+    #     print(e)
+    #     exit()
+    #
+    # # Call the function to get stops grouped by their stop_type
+    # stops_by_type = get_stops_by_type(bus_list)
+    # # Print the output in the desired format
+    # for stop_type, stops in stops_by_type.items():
+    #     print(f"{stop_type}: {len(stops)} {stops}")
 
-    # Call the function to get stops grouped by their stop_type
-    stops_by_type = get_stops_by_type(bus_list)
-    # Print the output in the desired format
-    for stop_type, stops in stops_by_type.items():
-        print(f"{stop_type}: {len(stops)} {stops}")
+    # task of stage 5 - Unlost in time
+    # Call the function to check the arrival time for upcoming stops for each bus line
+    time_anomalies = check_arrival_time(bus_list)
+
+    if time_anomalies:
+        print("Arrival time test:")
+        for bus_id, stops in time_anomalies.items():
+            stops_str = ", ".join(stops)
+            print(f"bus_id line {bus_id}: wrong time on station {stops_str}")
+    else:
+        print("OK")
 
 
 if __name__ == "__main__":
