@@ -5,3 +5,4 @@ content:
 - Regexp flags in Python
 - Overview of NLTK
 - Tokenization
+- Itertools module
