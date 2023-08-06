@@ -22,8 +22,32 @@ def logger(func):
 
     return wrap
 
+
 # @logger
 def check_military_time(str_time: str) -> bool:
+    """
+    Check if the input string represents a valid military time format (24-hour format).
+
+    Parameters:
+        str_time (str): The input string representing the time in the format 'hh:mm'.
+
+    Returns:
+        bool: True if the input string is a valid military time format, otherwise False.
+
+    Military Time Format (24-hour format):
+    - The time should have two digits for hours, followed by a colon ':', and then two digits for minutes.
+    - The first digit of hours should be 0 or 1.
+    - Hours less than 10 should have a leading zero, e.g., '08:34'.
+    - The delimiter between hours and minutes should be a colon ':'.
+    - The minutes should be between 00 and 59.
+
+    Examples:
+        check_military_time("08:34")  # True
+        check_military_time("14:45")  # True
+        check_military_time("3:15")   # False (invalid hour)
+        check_military_time("18:60")  # False (invalid minute)
+        check_military_time("09-20")  # False (invalid delimiter)
+    """
     # Define the regex pattern for military time format
     pattern = r'^[01]\d:[0-5]\d$'
 
@@ -36,6 +60,27 @@ def check_military_time(str_time: str) -> bool:
 
 # @logger
 def check_stop_name_in_list(stop_name:str) -> bool:
+    """
+    Check if the given stop_name exists in a predefined list of valid stop names.
+
+    Parameters:
+        stop_name (str): The stop name to be checked for validity.
+
+    Returns:
+        bool: True if the stop_name exists in the predefined list, otherwise False.
+
+    Predefined List of Valid Stop Names:
+    - The function checks if the given stop_name is present in a predefined set of valid stop names.
+    - The list_stop_names set contains strings representing valid stop names, including their suffixes.
+
+    Examples:
+        check_stop_name_in_list("Sesame Street")   # True
+        check_stop_name_in_list("Fifth Avenue")    # True
+        check_stop_name_in_list("Sunset Boulevard")# True
+        check_stop_name_in_list("Elm Street")      # True
+        check_stop_name_in_list("Broadway Avenue") # False (not in the predefined list)
+        check_stop_name_in_list("Pilotow Street")  # True
+    """
     list_stop_names = {"Sesame Street", "Fifth Avenue", "Sunset Boulevard", "Elm Street",
                        "Bourbon Street", "Prospekt Avenue", "Pilotow Street"}
     return stop_name in list_stop_names
@@ -43,6 +88,27 @@ def check_stop_name_in_list(stop_name:str) -> bool:
 
 # @logger
 def check_stop_name(stop_name: str) -> bool:
+    """
+    Check if the given stop_name has a valid suffix and a valid prefix.
+
+    Parameters:
+        stop_name (str): The stop name to be checked for validity.
+
+    Returns:
+        bool: True if the stop_name has a valid suffix and a valid prefix, otherwise False.
+
+    Valid Suffix and Prefix:
+    - The function uses regular expressions to check if the stop_name has a valid suffix and a valid prefix.
+    - The valid_suffix_pattern checks for a space followed by one of the valid suffix options ('Road', 'Avenue', 'Boulevard', 'Street') at the end of the stop_name.
+    - The valid_prefix_pattern checks for a string that starts with an uppercase letter and is followed by one or more letters or spaces.
+
+    Examples:
+        check_stop_name("Sesame Street")   # True
+        check_stop_name("Fifth Avenue")    # True
+        check_stop_name("Fifth Av.")       # False (invalid suffix)
+        check_stop_name("Elm")            # False (missing valid suffix)
+        check_stop_name("street Sesame")  # False (invalid prefix)
+    """
     # Define the regex patterns for valid suffix and valid prefix
     valid_suffix_pattern = r' (Road|Avenue|Boulevard|Street)$'
     valid_prefix_pattern = r'^[A-Z][a-zA-Z\s]+'
@@ -57,8 +123,29 @@ def check_stop_name(stop_name: str) -> bool:
     return has_valid_suffix and has_valid_prefix
 
 
-@logger
+# @logger
 def check_stop_type(stop_type:str) -> bool:
+    """
+    Check if the given stop_type is a valid stop type.
+
+    Parameters:
+        stop_type (str): The stop type to be checked for validity.
+
+    Returns:
+        bool: True if the stop_type is a valid stop type, otherwise False.
+
+    Valid Stop Types:
+    - The function checks if the given stop_type is present in a predefined set of valid stop types.
+    - The list_stop_types set contains valid stop types, including the empty string '', 'S' (Station),
+      'O' (Outbound), and 'F' (Flag Stop).
+
+    Examples:
+        check_stop_type("")  # True (empty string is a valid stop type)
+        check_stop_type("S") # True ('S' is a valid stop type)
+        check_stop_type("O") # True ('O' is a valid stop type)
+        check_stop_type("F") # True ('F' is a valid stop type)
+        check_stop_type("P") # False ('P' is not a valid stop type)
+    """
     list_stop_types = {"", "S", "O", "F"}
     return stop_type in list_stop_types
 
@@ -126,12 +213,9 @@ def main():
          {"bus_id": 128, "stop_id": 3, "stop_name": "", "next_stop": 5, "stop_type": "", "a_time": "08:19"},
          {"bus_id": 128, "stop_id": 5, "stop_name": "Fifth Avenue", "next_stop": 7, "stop_type": "O", "a_time": "08:25"}]
 
-        Output:
+        Output: (only report stop_name, stop_type, a_time)
         Type and required field validation: 2 errors
-        bus_id: 0
-        stop_id: 0
         stop_name: 1
-        next_stop: 0
         stop_type: 1
         a_time: 0
         """
@@ -142,7 +226,6 @@ def main():
     for key, value in res.items():
         if key in ("stop_name","stop_type","a_time"):
             print(f"{key}: {value}")
-
 
 
 if __name__ == "__main__":
